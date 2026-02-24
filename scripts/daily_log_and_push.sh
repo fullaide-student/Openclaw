@@ -10,6 +10,7 @@ DATE_STR="$(TZ="$TZ_REGION" date +%F)"
 NOW_STR="$(TZ="$TZ_REGION" date '+%Y-%m-%d %H:%M %Z')"
 DAILY_DIR="docs/daily"
 DAILY_FILE="$DAILY_DIR/$DATE_STR.md"
+README_FILE="docs/README.md"
 
 mkdir -p "$DAILY_DIR"
 
@@ -35,9 +36,38 @@ $COMMITS
 - This file is refreshed daily and committed automatically.
 EOF
 
-# Commit only if there are changes (including first-time untracked file)
-if [[ -n "$(git status --porcelain -- "$DAILY_FILE")" ]]; then
-  git add "$DAILY_FILE"
-  git commit -m "docs(daily): update $DATE_STR activity log"
+# Build docs index links dynamically
+LATEST_DAILY="$(find "$DAILY_DIR" -maxdepth 1 -type f -name '*.md' | sort | tail -n 1 | sed 's#^docs/##')"
+REFERENCE_LINKS="$(find docs/reference -maxdepth 1 -type f | sort | while read -r f; do
+  rel="${f#docs/}"
+  base="$(basename "$f")"
+  printf -- '- [%s](%s)\n' "$base" "$rel"
+done)"
+
+cat > "$README_FILE" <<EOF
+# OpenClaw Docs
+
+Central documentation for this OpenClaw setup.
+
+## Structure
+
+- \`docs/daily/\` — daily logs and execution notes
+- \`docs/projects/\` — project plans and milestones
+- \`docs/reference/\` — stable configuration and operational reference
+
+## Quick Links
+
+- Latest daily log: [${LATEST_DAILY##*/}](${LATEST_DAILY})
+- Project doc: [myopenclaw.md](projects/myopenclaw.md)
+
+## Reference Files
+
+$REFERENCE_LINKS
+EOF
+
+# Commit only if there are changes
+if [[ -n "$(git status --porcelain -- "$DAILY_FILE" "$README_FILE")" ]]; then
+  git add "$DAILY_FILE" "$README_FILE"
+  git commit -m "docs: update daily log and docs index for $DATE_STR"
   git push
 fi
