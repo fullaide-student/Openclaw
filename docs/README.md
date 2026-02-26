@@ -10,7 +10,7 @@ Central documentation for this OpenClaw setup.
 
 ## Quick Links
 
-- Latest daily log: [2026-02-24.md](daily/2026-02-24.md)
+- Latest daily log: [2026-02-25.md](daily/2026-02-25.md)
 - Project doc: [myopenclaw.md](projects/myopenclaw.md)
 
 ## Reference Files
